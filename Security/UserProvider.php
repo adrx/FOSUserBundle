@@ -15,10 +15,11 @@ use FOS\UserBundle\Model\UserInterface;
 use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface as SecurityUserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class UserProvider implements UserProviderInterface
+class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
     /**
      * @var UserManagerInterface
@@ -77,6 +78,13 @@ class UserProvider implements UserProviderInterface
         $userClass = $this->userManager->getClass();
 
         return $userClass === $class || is_subclass_of($class, $userClass);
+    }
+
+    public function upgradePassword(SecurityUserInterface $user, string $newEncodedPassword): void
+    {
+        /** @var UserInterface $user */
+        $user->setPassword($newEncodedPassword);
+        $this->userManager->updateUser($user);
     }
 
     /**
